@@ -1,0 +1,257 @@
+rm(list = ls())
+#YLD和HALE误差残差计算###################
+#### Hale Model
+setwd("E:\\投稿修改1")
+GBDData<-read.csv("GBD Data.csv")
+GBDData<-with(GBDData,GBDData[order(Year,Sex,Age),])
+GBDData$Hale1<-0;GBDData$Hale1low<-0;GBDData$Hale1upp<-0
+##i=1990;j="Both"
+#Hale.qx程序见另外一个code
+##Res=Hale.qx(qx=AA$Qxlow[-21],Rx=AA$YldRlow/100000,sex=j1,a=AA$Exupp[21])
+##GBDData[GBDData$Year==i & GBDData$Sex==j,"Hale2upp"]<-Res$Hale
+##Res=Hale.qx(qx=AA$Qxupp[-21],Rx=AA$YldRupp/100000,sex=j1,a=AA$Exlow[21])
+##GBDData[GBDData$Year==i & GBDData$Sex==j,"Hale2low"]<-Res$Hale
+for(i in 1990:2019){
+  for (j in c("Both","Male","Female")){
+    AA=subset(GBDData,subset= Year==i&Sex==j, select=c(Age,YldR,YldRlow,YldRupp,Qx,Ex))
+    #AA=AA[order(AA$Age),]
+    j1=j;  if (j1=="Both") {j1="Combined"}
+    Res=Hale.qx(qx=AA$Qx[-21],Rx=AA$YldR/100000,sex=j1,a=AA$Ex[21])
+    GBDData[GBDData$Year==i & GBDData$Sex==j,"Hale1"]<-Res$Hale
+    Res=Hale.qx(qx=AA$Qx[-21],Rx=AA$YldRlow/100000,sex=j1,a=AA$Ex[21])
+    GBDData[GBDData$Year==i & GBDData$Sex==j,"Hale1upp"]<-Res$Hale
+    Res=Hale.qx(qx=AA$Qx[-21],Rx=AA$YldRupp/100000,sex=j1,a=AA$Ex[21])
+    GBDData[GBDData$Year==i & GBDData$Sex==j,"Hale1low"]<-Res$Hale
+  }
+}
+
+##########数据读入与整合
+logit<-function(x)round(0.5*log((1-x)/x),7)
+GBDData1<-data.frame(Year=GBDData$Year,Sex=GBDData$Sex,Age=GBDData$Age,
+                     #Yupp=logit(GBDData$YldRupp/100000),Ylow=logit(GBDData$YldRlow/100000),
+                     Y=GBDData$YldR/100000,Ylogit=logit(GBDData$YldR/100000),
+                     Qx=GBDData$Qx,Ex=GBDData$Ex,Hale=GBDData$Hale1)
+CovData<-read.csv("Cov Data.csv")
+##library(reshape2)
+colnames(CovData);unique(GBDData$Sex)
+colnames(CovData)[3:5]<-c("Both","Male","Female")
+CovData1<-reshape2::melt(data=CovData,
+                         id.vars=c("Year","IID","U5MR","PIPTW","X5","X6","X7"),
+                         variable.name="Sex",
+                         value.name ="PCDPF")
+CovData1<-data.frame(Year=CovData1$Year,Sex=CovData1$Sex,
+                     X1=round(CovData1$IID/1000,7),
+                     X2=round(CovData1$PCDPF/1000,7),
+                     X3=CovData1$PIPTW,
+                     X4=round(CovData1$U5MR/1000,7),
+                     X5=CovData1$X5,
+                     X6=CovData1$X6,
+                     X7=CovData1$X7)
+MyData<-merge(GBDData1,CovData1,by=c("Year","Sex"))
+str(MyData)
+
+##########回归模型估计与预测
+Para<-unique(MyData[,c("Sex","Age")])   
+MyData$Ylogit.e<-0      #模型值logit(yldR)
+
+#计算方差膨胀因子
+#install.packages("car")
+library(car)
+
+#model 1
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X5+X6+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 2
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X5+X6,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 3
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X5+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 4
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X6+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 5
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X5+X6+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 6
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X5,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 7
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X6,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 8
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 9
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X5+X6,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 10
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X5+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 11
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X6+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 12
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X4,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 13
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X5,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 14
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X6,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 15
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3+X7,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+
+#model 
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X3,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X4,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+#model 
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Ylogit~X1+X2+X4,data =resData )
+  vif<- round(vif(a), 2)
+  print(vif)
+  MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],"Ylogit.e"]<-predict(a)
+}
+
+
+##########模型Hale的计算
+MyData$Y.e<-round(1/(1+exp(2*MyData$Ylogit.e)),7)     ##模型值yldR
+##source("F:/Procedure/Hale.qx.r")
+MyData<-with(MyData,MyData[order(Year,Sex,Age),])
+MyData$Hale.e<-0
+###模型拟合值Hale的计算
+for(i in 1990:2019){
+  for (j in c("Both","Male","Female")){
+    AA=subset(MyData,subset= Year==i&Sex==j, select=c(Age,Y.e,Qx,Ex))
+    #AA=AA[order(AA$Age),]
+    j1=j;  if (j1=="Both") {j1="Combined"}
+    Res=Hale.qx(qx=AA$Qx[-21],Rx=AA$Y.e,sex=j1,a=AA$Ex[21])
+    MyData[MyData$Year==i & MyData$Sex==j,"Hale.e"]<-Res$Hale
+  }
+}
+
+##########YldR模型残差与误差统计
+MyData$Y.Resid<-MyData$Y.e-MyData$Y                    ##模型yldR残差
+MyData$Hale.Resid<-MyData$Hale.e-MyData$Hale           ##模型Hale残差
+library(plyr)
+Error<-ddply(.data=MyData, .variables=c("Sex","Age"), .fun= summarize,
+             YldR.MAE=round(mean(abs(Y.Resid)),4), 
+             YldR.MAPE=round(mean(abs(Y.Resid/Y))*100,4),
+             Hale.MAE=round(mean(abs(Hale.Resid)),4), 
+             Hale.MAPE=round(mean(abs(Hale.Resid/Hale)*100),4) )     ##误差概述
+
+#求和
+library(dplyr)
+# 确定所有数值型列，并排除"Age"
+num_columns <- colnames(Error)[sapply(Error, is.numeric) & colnames(Error) != "Age"]
+Error %>%
+  group_by(Sex) %>%
+  summarise(across(all_of(num_columns), ~round(sum(.x, na.rm = TRUE)/21, digits = 4)))
