@@ -1,0 +1,498 @@
+rm(list = ls())
+library(MASS)
+setwd("E:\\研究生毕业论文\\毕业论文结果\\构建模型和误差评估\\多元正态分布")
+#整理数据
+GBDData<-read.csv("E:\\研究生毕业论文\\毕业论文结果\\构建模型和误差评估\\模型拟合值（3变量）.csv")
+GBDData<-with(GBDData,GBDData[order(Sex,Age,Year),])
+Para<-unique(GBDData[,c("Age")])
+tx1 <- subset(GBDData,Sex=="Both" & Age %in% Para, select=c(Age,Year,Ylogit))
+df_list <- split(tx1, tx1$Age)
+# 修改列名，添加后缀（除了"Year"列）
+# 修改列名，添加后缀（除了"Year"列）
+df_list <- lapply(seq_along(df_list), function(i) {
+  names(df_list[[i]]) <- lapply(names(df_list[[i]]), function(col_name) {
+    if (col_name != "Year") {
+      paste0(col_name, "_", i)
+    } else {
+      col_name
+    }
+  })
+  return(df_list[[i]])
+})
+# 合并list，按照"year"列合并
+Mydata2 <- Reduce(function(x, y) merge(x, y, by = "Year", all = TRUE), df_list)
+# 使用dplyr包中的select函数
+library(dplyr)
+Mydata2 <- Mydata2 %>% 
+  select(-contains("Age"))
+
+#删除年份变量
+# 假设 "year" 在第一列
+Mydata2 <- Mydata2[, -1]
+
+
+#两两年龄组的协方差
+sigma1 <- matrix(1,nrow =19,ncol = 19 )
+for (j in 1:19) {
+  for (i in 1:19) {a <- Mydata2[,j];a1 <- Mydata2[,i];m <- cov(a,a1);sigma1[i,j] <- m}}
+
+#开始构建多元正态分布######
+#每个年份构建1个多元正态分布，一共30个多元正态分布
+#每个正态分布有19个年龄组，YLD率的logit变换值！
+# 设置随机数种子以确保结果的可重复性
+set.seed(123)
+#1990
+mu1<-Mydata2[1,];mu1 <- as.numeric(mu1)
+#sigma1来自于最上面"多元正态分布两两协方差.csv"的计算
+#切记：不能读取文件，要直接用cov函数计算出来的数值作为协方差矩阵构建多元正态分布
+n<-1000;biv1<-mvrnorm(n,mu1,sigma1)
+mu.hat<-colMeans(biv1)  #均值X_
+Sigma.hat<-cov(biv1) #方差S
+#1991年
+mu2<-Mydata2[2,];mu2 <- as.numeric(mu2)
+n<-1000;biv2<-mvrnorm(n,mu2,sigma1)
+#1992年
+mu3<-Mydata2[3,];mu3 <- as.numeric(mu3)
+n<-1000;biv3<-mvrnorm(n,mu3,sigma1)
+#1993年
+mu4<-Mydata2[4,];mu4 <- as.numeric(mu4)
+n<-1000;biv4<-mvrnorm(n,mu4,sigma1)
+#1994年
+mu5<-Mydata2[5,];mu5 <- as.numeric(mu5)
+n<-1000;biv5<-mvrnorm(n,mu5,sigma1)
+#1995年
+mu6<-Mydata2[6,];mu6 <- as.numeric(mu6)
+n<-1000;biv6<-mvrnorm(n,mu6,sigma1)
+#1996年
+mu7<-Mydata2[7,];mu7 <- as.numeric(mu7)
+n<-1000;biv7<-mvrnorm(n,mu7,sigma1)
+#1997年
+mu8<-Mydata2[8,];mu8 <- as.numeric(mu8)
+n<-1000;biv8<-mvrnorm(n,mu8,sigma1)
+#1998年
+mu9<-Mydata2[9,];mu9 <- as.numeric(mu9)
+n<-1000;biv9<-mvrnorm(n,mu9,sigma1)
+#1999
+mu10<-Mydata2[10,];mu10 <- as.numeric(mu10)
+n<-1000;biv10<-mvrnorm(n,mu10,sigma1)
+#2000
+mu11<-Mydata2[11,];mu11 <- as.numeric(mu11)
+n<-1000;biv11<-mvrnorm(n,mu11,sigma1)
+#2001
+mu12<-Mydata2[12,];mu12 <- as.numeric(mu12)
+n<-1000;biv12<-mvrnorm(n,mu12,sigma1)
+#2002
+mu13<-Mydata2[13,];mu13 <- as.numeric(mu13)
+n<-1000;biv13<-mvrnorm(n,mu13,sigma1)
+#2003
+mu14<-Mydata2[14,];mu14 <- as.numeric(mu14)
+n<-1000;biv14<-mvrnorm(n,mu14,sigma1)
+#2004
+mu15<-Mydata2[15,];mu15 <- as.numeric(mu15)
+n<-1000;biv15<-mvrnorm(n,mu15,sigma1)
+#2005
+mu16<-Mydata2[16,];mu16 <- as.numeric(mu16)
+n<-1000;biv16<-mvrnorm(n,mu16,sigma1)
+#2006
+mu17<-Mydata2[17,];mu17 <- as.numeric(mu17)
+n<-1000;biv17<-mvrnorm(n,mu17,sigma1)
+#2007
+mu18<-Mydata2[18,];mu18 <- as.numeric(mu18)
+n<-1000;biv18<-mvrnorm(n,mu18,sigma1)
+#2008
+mu19<-Mydata2[19,];mu19 <- as.numeric(mu19)
+n<-1000;biv19<-mvrnorm(n,mu19,sigma1)
+#2009
+mu20<-Mydata2[20,];mu20 <- as.numeric(mu20)
+n<-1000;biv20<-mvrnorm(n,mu20,sigma1)
+#2010
+mu21<-Mydata2[21,];mu21 <- as.numeric(mu21)
+n<-1000;biv21<-mvrnorm(n,mu21,sigma1)
+#2011
+mu22<-Mydata2[22,];mu22 <- as.numeric(mu22)
+n<-1000;biv22<-mvrnorm(n,mu22,sigma1)
+#2012
+mu23<-Mydata2[23,];mu23 <- as.numeric(mu23)
+n<-1000;biv23<-mvrnorm(n,mu23,sigma1)
+#2013
+mu24<-Mydata2[24,];mu24 <- as.numeric(mu24)
+n<-1000;biv24<-mvrnorm(n,mu24,sigma1)
+#2014
+mu25<-Mydata2[25,];mu25 <- as.numeric(mu25)
+n<-1000;biv25<-mvrnorm(n,mu25,sigma1)
+#2015
+mu26<-Mydata2[26,];mu26 <- as.numeric(mu26)
+n<-1000;biv26<-mvrnorm(n,mu26,sigma1)
+#2016
+mu27<-Mydata2[27,];mu27 <- as.numeric(mu27)
+n<-1000;biv27<-mvrnorm(n,mu27,sigma1)
+#2017
+mu28<-Mydata2[28,];mu28 <- as.numeric(mu28)
+n<-1000;biv28<-mvrnorm(n,mu28,sigma1)
+#2018
+mu29<-Mydata2[29,];mu29 <- as.numeric(mu29)
+n<-1000;biv29<-mvrnorm(n,mu29,sigma1)
+#2019
+mu30<-Mydata2[30,];mu30 <- as.numeric(mu30)
+n<-1000;biv30<-mvrnorm(n,mu30,sigma1)
+
+#读取自变量
+CovData <- read.csv("E:\\研究生毕业论文\\毕业论文结果\\构建模型和误差评估\\Cov Data.csv")
+X1 <- CovData$IID/1000;X2 <- CovData$PCDPF_both/1000;X5 <- CovData$U5MR/1000;newdata <- data.frame(X1,X2,X5)
+#3个自变量#用for函数计算回归系数、均数、2.5和97.2分位数###################
+#y1
+xs <- matrix(1,nrow =1000,ncol = 4 )
+for (i in 1:1000) {j=1;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                           biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                           biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β1 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α1 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α2 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α3 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+β1;α1;α2;α3
+#y2
+for (i in 1:1000) {j=2;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β2 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α5 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α6 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α7 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y3
+for (i in 1:1000) {j=3;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β3 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α9 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α10 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α11 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y4
+for (i in 1:1000) {j=4;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β4 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α13 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α14 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α15 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y5
+for (i in 1:1000) {j=5;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β5 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α17 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α18 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α19<- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y6
+for (i in 1:1000) {j=6;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β6 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α21 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α22 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α23 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y7
+for (i in 1:1000) {j=7;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β7 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α25 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α26 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α27 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y8
+for (i in 1:1000) {j=8;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β8 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α29 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α30 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α31 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y9
+for (i in 1:1000) {j=9;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β9 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α33 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α34 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α35 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y10
+for (i in 1:1000) {j=10;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β10 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α37 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α38<- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α39 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y11
+for (i in 1:1000) {j=11;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β11 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α41 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α42 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α43 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y12
+for (i in 1:1000) {j=12;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β12 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α45 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α46 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α47 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y13
+for (i in 1:1000) {j=13;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β13 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α49 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α50 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α51 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y14
+for (i in 1:1000) {j=14;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β14 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α53 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α54 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α55 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y15
+for (i in 1:1000) {j=15;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β15 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α57 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α58 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α59 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y16
+for (i in 1:1000) {j=16;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β16 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α61 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α62 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α63 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y17
+for (i in 1:1000) {j=17;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β17 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α65 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α66<- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α67 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y18
+for (i in 1:1000) {j=18;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β18 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α69 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α70 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α71 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+#y19
+for (i in 1:1000) {j=19;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);summary(a1);β1 <- summary(a1)$coefficients[1,1];α1 <- summary(a1)$coefficients[2,1];
+α2 <- summary(a1)$coefficients[3,1];α3 <- summary(a1)$coefficients[4,1];xs[i,] <- c(β1,α1,α2,α3)}
+#求2.5和97.5分位数
+β1 <- xs[,1];α1 <- xs[,2];α2 <- xs[,3];α3 <- xs[,4]
+β19 <- c(mean(β1),quantile(β1,probs =c(0.025,0.975)));α73 <- c(mean(α1),quantile(α1,probs =c(0.025,0.975)))
+α74 <- c(mean(α2),quantile(α2,probs =c(0.025,0.975)));α75 <- c(mean(α3),quantile(α3,probs =c(0.025,0.975)))
+
+#整合模型回归系数
+p1 <- data.frame(α1,α2,α3,α5, α6, α7,α9,α10,α11,α13,α14,α15, α17, α18,α19,α21, α22, α23,α25,α26, α27,α29,α30, α31,α33,α34,α35,α37,α38, 
+                 α39,α41,α42,α43,α45,α46,α47,α49,α50,α51,α53,α54,α55,α57,α58,α59,α61,α62,α63,α65,α66,α67,α69,α70,α71,α73,α74,α75);
+p1 <- t(p1);p2<- data.frame(β1,β2,β3,β4,β5,β6,β7,β8,β9,β10,β11,β12,β13,β14,β15,β16,β17,β18,β19);p2 <- t(p2);p3 <- cbind.data.frame(p1,p2)
+#导出数据
+#合计
+write.csv(p3,file ="回归模型系数和区间logit（3变量）.csv")
+
+
+#求YLD率模型拟合值（预测值）#3个自变量########################
+#合计
+#y1
+xs1 <- matrix(1,nrow =1000,ncol = 30 );jz1 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=1;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs1[i,] <- yc};xs1 <- 1/(1+exp(2*xs1))
+#求30年的y1的2.5和97.5分位数
+for (i in 1:30) {n <- xs1[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz1[i,] <- j}
+#y2
+xs2 <- matrix(1,nrow =1000,ncol = 30 );jz2 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=2;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs2[i,] <- yc};xs2 <- 1/(1+exp(2*xs2))
+for (i in 1:30) {n <- xs2[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz2[i,] <- j}
+#y3
+xs3 <- matrix(1,nrow =1000,ncol = 30 );jz3 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=3;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs3[i,] <- yc};xs3 <- 1/(1+exp(2*xs3))
+for (i in 1:30) {n <- xs3[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz3[i,] <- j}
+#y4
+xs4 <- matrix(1,nrow =1000,ncol = 30 );jz4 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=4;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs4[i,] <- yc};xs4 <- 1/(1+exp(2*xs4))
+for (i in 1:30) {n <- xs4[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz4[i,] <- j}
+#y5
+xs5 <- matrix(1,nrow =1000,ncol = 30 );jz5 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=5;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs5[i,] <- yc};xs5 <- 1/(1+exp(2*xs5))
+for (i in 1:30) {n <- xs5[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz5[i,] <- j}
+#y6
+xs6 <- matrix(1,nrow =1000,ncol = 30 );jz6 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=6;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs6[i,] <- yc};xs6 <- 1/(1+exp(2*xs6))
+for (i in 1:30) {n <- xs6[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz6[i,] <- j}
+#y7
+xs7 <- matrix(1,nrow =1000,ncol = 30 );jz7 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=7;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs7[i,] <- yc};xs7 <- 1/(1+exp(2*xs7))
+for (i in 1:30) {n <- xs7[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz7[i,] <- j}
+#y8
+xs8 <- matrix(1,nrow =1000,ncol = 30 );jz8 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=8;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs8[i,] <- yc};xs8 <- 1/(1+exp(2*xs8))
+for (i in 1:30) {n <- xs8[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz8[i,] <- j}
+#y9
+xs9 <- matrix(1,nrow =1000,ncol = 30 );jz9 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=9;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs9[i,] <- yc};xs9 <- 1/(1+exp(2*xs9))
+for (i in 1:30) {n <- xs9[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz9[i,] <- j}
+#y10
+xs10<- matrix(1,nrow =1000,ncol = 30 );jz10 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=10;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs10[i,] <- yc};xs10 <- 1/(1+exp(2*xs10))
+for (i in 1:30) {n <- xs10[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz10[i,] <- j}
+#y11
+xs11 <- matrix(1,nrow =1000,ncol = 30 );jz11 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=11;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs11[i,] <- yc};xs11 <- 1/(1+exp(2*xs11))
+for (i in 1:30) {n <- xs11[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz11[i,] <- j}
+#y12
+xs12 <- matrix(1,nrow =1000,ncol = 30 );jz12 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=12;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs12[i,] <- yc};xs12 <- 1/(1+exp(2*xs12))
+for (i in 1:30) {n <- xs12[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz12[i,] <- j}
+#y13
+xs13 <- matrix(1,nrow =1000,ncol = 30 );jz13 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=13;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs13[i,] <- yc};xs13 <- 1/(1+exp(2*xs13))
+for (i in 1:30) {n <- xs13[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz13[i,] <- j}
+#y14
+xs14 <- matrix(1,nrow =1000,ncol = 30 );jz14 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=14;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs14[i,] <- yc};xs14 <- 1/(1+exp(2*xs14))
+for (i in 1:30) {n <- xs14[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz14[i,] <- j}
+#y15
+xs15 <- matrix(1,nrow =1000,ncol = 30 );jz15 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=15;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs15[i,] <- yc};xs15 <- 1/(1+exp(2*xs15))
+for (i in 1:30) {n <- xs15[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz15[i,] <- j}
+#y16
+xs16 <- matrix(1,nrow =1000,ncol = 30 );jz16 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=16;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs16[i,] <- yc};xs16 <- 1/(1+exp(2*xs16))
+for (i in 1:30) {n <- xs16[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz16[i,] <- j}
+#y17
+xs17 <- matrix(1,nrow =1000,ncol = 30 );jz17 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=17;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs17[i,] <- yc};xs17 <- 1/(1+exp(2*xs17))
+for (i in 1:30) {n <- xs17[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz17[i,] <- j}
+#y18
+xs18 <- matrix(1,nrow =1000,ncol = 30 );jz18 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=18;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs18[i,] <- yc};xs18 <- 1/(1+exp(2*xs18))
+for (i in 1:30) {n <- xs18[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz18[i,] <- j}
+#y19
+xs19 <- matrix(1,nrow =1000,ncol = 30 );jz19 <- matrix(1,nrow =30,ncol = 3 )
+for (i in 1:1000) {j=19;yi <- c(biv1[i,j],biv2[i,j],biv3[i,j],biv4[i,j],biv5[i,j],biv6[i,j],biv7[i,j],biv8[i,j],biv9[i,j],biv10[i,j],
+                               biv11[i,j],biv12[i,j],biv13[i,j],biv14[i,j],biv15[i,j],biv16[i,j],biv17[i,j],biv18[i,j],biv19[i,j],biv20[i,j],
+                               biv21[i,j],biv22[i,j],biv23[i,j],biv24[i,j],biv25[i,j],biv26[i,j],biv27[i,j],biv28[i,j],biv29[i,j],biv30[i,j]);
+a1 <- lm(yi~X1+X2+X5);yc <- predict(a1, newdata = newdata);xs19[i,] <- yc};xs19 <- 1/(1+exp(2*xs19))
+for (i in 1:30) {n <- xs19[,i];j <- c(mean(n),quantile(n,probs =c(0.025,0.975)));jz19[i,] <- j}
+
+#整合预测值
+p4 <- cbind.data.frame(jz1,jz2,jz3,jz4,jz5,jz6,jz7,jz8,jz9,jz10,jz11,jz12,jz13,jz14,jz15,jz16,jz17,jz18,jz19)
+
+#更改列标目
+library(data.table)
+setnames(p4, c("ny1val", "ny1lower", "ny1upper","ny2val", "ny2lower", "ny2upper","ny3val", "ny3lower", "ny3upper",
+               "ny4val", "ny4lower", "ny4upper","ny5val", "ny5lower", "ny5upper","ny6val", "ny6lower", "ny6upper",
+               "ny7val", "ny7lower", "ny7upper","ny8val", "ny8lower", "ny8upper","ny9val", "ny9lower", "ny9upper",
+               "ny10val", "ny10lower", "ny10upper","ny11val", "ny11lower", "ny11upper","ny12val", "ny12lower", "ny12upper",
+               "ny13val", "ny13lower", "ny13upper","ny14val", "ny14lower", "ny14upper","ny15val", "ny15lower", "ny15upper",
+               "ny16val", "ny16lower", "ny16upper","ny17val", "ny17lower", "ny17upper","ny18val", "ny18lower", "ny18upper",
+               "ny19val", "ny19lower", "ny19upper"))
+p4$Year <- seq(1990,2019)
+p4$group <- 1
+#导出数据
+#合计
+write.csv(p4,file ="YLD率模型拟合值及其区间（3变量）.csv")
