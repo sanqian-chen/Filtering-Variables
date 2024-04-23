@@ -1,0 +1,38 @@
+#Model parameter estimation
+#### Hale Model
+rm(list = ls())
+setwd("E:\\研究生毕业论文\\老师对比")
+GBDData<-read.csv("GBD Data.csv")
+logit<-function(x)round(0.5*log((1-x)/x),7)
+GBDData1<-data.frame(Year=GBDData$Year,Sex=GBDData$Sex,Age=GBDData$Age,
+                     Y=logit(GBDData$YldR/100000), Yupp=logit(GBDData$YldRupp/100000), 
+                     Ylow=logit(GBDData$YldRlow/100000))
+CovData<-read.csv("Cov Data.csv")
+##library(reshape2)
+colnames(CovData);unique(GBDData$Sex)
+colnames(CovData)[3:5]<-c("Both","Male","Female")
+CovData1<-reshape2::melt(data=CovData,
+                         id.vars=c("Year","IID","U5MR","PIPTW"),
+                         variable.name="Sex",
+                         value.name ="PCDPF")
+CovData1<-data.frame(Year=CovData1$Year,Sex=CovData1$Sex,
+                     X1=round(CovData1$IID/1000,7),
+                     X2=round(CovData1$PCDPF/1000,7),
+                     X3=round(CovData1$U5MR/1000,7),
+                     X4=round(CovData1$PIPTW/1000,7))
+MyData<-merge(GBDData1,CovData1,by=c("Year","Sex"))
+head(MyData)
+str(MyData)
+
+Para<-unique(MyData[,c("Sex","Age")])
+Para<-data.frame(Sex=Para$Sex,Age=Para$Age,a0=0,a1=0,a2=0,a3=0,a4=0)
+i=1
+i=i+1
+for(i in 1:nrow(Para)){
+  resData<-MyData[MyData$Sex==Para[i,"Sex"] & MyData$Age==Para[i,"Age"],]
+  a<-lm(Y~X1+X2+X3+X4,data =resData )
+  Para[i,-c(1,2)]<-round(coef(a),7)
+}
+write.csv(Para,file = "E:\\系数.csv")
+
+
